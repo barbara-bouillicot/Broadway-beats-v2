@@ -1,0 +1,49 @@
+<div class="search-bar-container d-flex justify-content-center my-3">
+  <%= form_tag shows_path, method: :get, class: "search-bar" do %>
+      <%= text_field_tag :search, params[:search], placeholder: "Search for a show", class: "search-input", autocomplete: "off" %>
+      <%= button_tag type: 'submit', class: "search-button" do %>
+        <i class="fa-solid fa-magnifying-glass"></i>
+      <% end %>
+    <% end %>
+</div>
+
+<div data-controller="show-modal" >
+  <div class="cards-container mb-3" >
+    <% @shows.each do |show| %>
+      <div class="card-show d-flex p-3">
+        <div class="card-img w-50">
+          <%= image_tag show.image_url, alt: "#{show.title} Image", class: "show-image" %>
+        </div>
+        <div class="card-info w-50">
+          <div class="card-title d-flex justify-content-between">
+            <h3><strong><%= show.title %></strong></h3>
+            <% unless SelectedShow.where(show_id: show.id, user_id: current_user.id).exists? %>
+              <%= link_to selected_shows_path(selected_show: { user_id: current_user.id, show_id: show.id }), data: { 'turbo-method' => :post } do %>
+                <i class="fa-solid fa-heart favorite" aria-label="Add to favorites"></i>
+              <% end %>
+            <% end %>
+          </div>
+          <%= show.description.truncate(80, separator: ' ', omission: '...') %>
+          <button type="button" class="btn-read-more mt-3" data-bs-toggle="modal" data-bs-target="#showModal" data-show-modal-target="button" data-action="click->show-modal#open" data-show-title="<%= show.title %>" data-show-content="<%= show.description %>">
+            <i class="fa-solid fa-angles-right"></i>
+          </button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="modal fade" id="showModal" tabindex="-1" aria-labelledby="showModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header text-center" >
+        <p class="modal-show-title w-75"><span id="modalShowTitle" data-show-modal-target="title"></span> </p>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body content" data-show-modal-target="content">
+
+      </div>
+      <div class="modal-footer"></div>
+    </div>
+  </div>
+  </div>
+</div>
