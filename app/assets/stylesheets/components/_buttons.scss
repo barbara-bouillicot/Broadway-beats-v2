@@ -1,0 +1,71 @@
+.btn-app{
+  background: var(--green);
+  border-radius: 999px;
+  box-shadow: var(--green) 0 10px 20px -10px;
+  box-sizing: border-box;
+  color: var(--bg-color);
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+  opacity: 1;
+  outline: 0 solid transparent;
+  padding: 12px 24px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: fit-content;
+  word-break: break-word;
+  border: 0;
+  font-weight: 600;
+}
+
+.play-button{
+  border: none;
+  background-color: transparent;
+
+  .fa-play{
+    font-size: 22px;
+    color: var(--green);
+    position:absolute;
+    right: 15px;
+  }
+}
+
+.playlist-btn{
+  top: 50px;
+}
+
+.homepage{
+  position: absolute;
+  bottom: 275px;
+}
+
+.fa-heart-crack,.favorite{
+  color:var(--green);
+  font-size: 18px;
+}
+
+.fa-headphones{
+  color:var(--green);
+  font-size: 32px;
+}
+
+.heart-songs{
+  color:var(--green);
+  font-size: 18px;
+}
+
+.fa-angles-right{
+  color:var(--bg-color);
+  background-color: var(--green);
+  font-size: 18px;
+  font-weight: bold;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.btn-read-more{
+ border:none;
+ background-color: transparent;
+}

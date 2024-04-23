@@ -1,0 +1,40 @@
+.card-show{
+
+  img{
+    width: 150px;
+    object-fit: cover;
+  }
+}
+
+.show-img{
+  img{
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+}
+
+.show-description{
+  text-align: justify;
+}
+
+.artist-name{
+  font-size:11px;
+}
+
+.card-title strong{
+  color: var(--text-color);
+}
+
+.card-description a{
+  text-align: center;
+  margin-top: 20px;
+}
+
+.cards-container{
+  padding-bottom: 70px;
+}
+
+.playlist-card{
+  font-size: 20px;
+}

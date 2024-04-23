@@ -10,3 +10,35 @@
 // Your CSS partials
 @import "components/index";
 @import "pages/index";
+
+:root{
+  --bg-color:#191414;
+  --text-color:#ffffff;
+  --green:#1DB954;
+  --light-grey: rgb(179,179,179);
+  --grey:rgb(160, 157, 157);
+}
+
+html{
+  width: 100vw;
+  height: 100vw;
+}
+
+a{
+  text-decoration: none;
+  color:var(--text-color)
+}
+
+h2{
+  font-family: "Poppins", sans-serif;
+}
+
+body{
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: "Poppins", sans-serif;
+}
+
+.track{
+  position: relative;
+}
