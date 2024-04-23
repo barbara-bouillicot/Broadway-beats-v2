@@ -1,0 +1,14 @@
+<div class="container">
+  <h2 class="text-center">My Playlists</h2>
+    <div class="playlists-container m-3 d-flex align-items-center justify-content-between">
+      <% @playlists.each do | playlist | %>
+        <div class="playlist-card my-3">
+          <%= link_to playlist.name, playlist_path(playlist) %>
+        </div>
+        <%= link_to playlist_path(playlist), data: { turbo_confirm: "Are you sure?", turbo_method: :delete } do %>
+          <i class="fa-solid fa-heart-crack"></i>
+        <% end %>
+      <% end %>
+    </div>
+    <%= render "playlists/new" %>
+</div>

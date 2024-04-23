@@ -1,0 +1,159 @@
+<div class="container" data-controller="music-player">
+  <div id="access-token" data-token="<%= current_user.access_token %>"></div>
+  <h3 class="text-center"><%= @playlist.name %></h3>
+    <% @playlist_songs.each do | playlist_song | %>
+      <div class="track p-3">
+        <div class="d-flex align-items-center">
+          <div>
+            <%= image_tag playlist_song.song.image_url, class:"avatar-square playlist-img", data: { music_player_target: "imagePlaylist" }%>
+          </div>
+          <div>
+            <%= playlist_song.song.title %>
+            <div class="artists-container d-flex">
+            <% playlist_song.song.artists.first(2).each_with_index do |artist, index| %>
+            <p class="artist-name"><%= ",  " if index > 0 %> <%= artist %></p>
+            <% end %>
+          </div>
+          </div>
+        </div>
+        <button class="play-button start-track " data-music-player-target="playButtons"  data-action="click->music-player#playlist" data-album-track-id="<%= playlist_song.song.track_id %>" data-track-name-id="<%= playlist_song.song.title%>" data-track-url-id="<%= playlist_song.song.image_url%>"  ><i class="fa-solid fa-play playlist-btn"></i></button>
+
+        <div class="player-container d-flex justify-content-between align-items-center d-none"  data-music-player-target="player" >
+          <div class ="track-playing w-75 d-flex align-items-center p-3" data-music-player-target="divTrackPlaying">
+
+          </div>
+          <button class="play-btn" data-playing="false" ><i class="fa-solid fa-play"></i></button>
+        </div>
+      </div>
+    <% end %>
+</div>
+
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+<script>
+   if (sessionStorage.getItem('pageLoadedBefore')) {
+  // If so, reload the page
+  sessionStorage.removeItem('pageLoadedBefore');
+  window.location.reload();
+} else {
+  // If not, set the flag in sessionStorage
+  sessionStorage.setItem('pageLoadedBefore', true);
+}
+
+  document.addEventListener('DOMContentLoaded', function() {
+  let player;
+  let playbackPosition;
+
+  // Function to play track
+  function playTrack(trackId) {
+    const token = document.getElementById("access-token").dataset.token;
+    player = new Spotify.Player({
+      name: 'Web Playback SDK Quick Start Player',
+      getOAuthToken: cb => { cb(token); },
+      volume: 0.5
+    });
+
+    // Play the track
+    player.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+      playTrackOnDevice(device_id, trackId);
+    });
+
+    player.connect();
+  }
+
+  // Function to play track on the device
+  function playTrackOnDevice(deviceId, trackId) {
+    const token = document.getElementById("access-token").dataset.token;
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        uris: [`spotify:track:${trackId}`],
+        position_ms: playbackPosition
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+  }
+
+  // Function to pause track
+  function pauseTrack() {
+    player.getCurrentState().then(state => {
+      if (state) {
+        playbackPosition = state.position;
+        player.pause();
+      }
+    });
+  }
+
+  // Define a global variable to store the currently playing track ID
+let currentlyPlayingTrackId = null;
+
+
+// Event listener for play/pause button
+const playButton = document.querySelector('.play-btn');
+playButton.addEventListener('click', function() {
+  const trackId = document.querySelector(".track-title-player").dataset.albumTrackId;
+  const isPlaying = this.dataset.playing === 'true';
+
+  // Check if the current track is already playing
+  const isCurrentTrackPlaying = trackId === currentlyPlayingTrackId;
+
+  if (isPlaying) {
+    // Pause the track only if it's the currently playing track
+    if (isCurrentTrackPlaying) {
+      pauseTrack();
+    }
+    this.dataset.playing = 'false';
+    this.innerHTML = '<i class="fa-solid fa-play"></i>';
+  } else {
+    // Play the track from the beginning if it's a new track
+    if (!isCurrentTrackPlaying) {
+      playbackPosition = 0; // Start from the beginning
+    }
+    playTrack(trackId);
+    currentlyPlayingTrackId = trackId; // Update currentlyPlayingTrackId
+    this.dataset.playing = 'true';
+    this.innerHTML = '<i class="fa-solid fa-pause"></i>';
+  }
+});
+
+
+  // Spotify Web Playback SDK initialization
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    const token = document.getElementById("access-token").dataset.token;
+    player = new Spotify.Player({
+      name: 'Web Playback SDK Quick Start Player',
+      getOAuthToken: cb => { cb(token); },
+      volume: 0.5,
+      robustnessLevel: 'MID'
+
+    });
+
+    // Ready
+    player.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+    });
+
+    // Not Ready
+    player.addListener('not_ready', ({ device_id }) => {
+      console.log('Device ID has gone offline', device_id);
+    });
+
+    player.addListener('initialization_error', ({ message }) => {
+      console.error(message);
+    });
+
+    player.addListener('authentication_error', ({ message }) => {
+      console.error(message);
+    });
+
+    player.addListener('account_error', ({ message }) => {
+      console.error(message);
+    });
+
+    player.connect();
+  };
+});
+</script>
