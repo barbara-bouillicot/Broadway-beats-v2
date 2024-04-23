@@ -2,6 +2,16 @@ source "https://rubygems.org"
 
 ruby "3.1.2"
 
+gem 'rspotify'
+
+gem "nokogiri"
+
+gem 'omniauth-spotify'
+
+gem "omniauth-rails_csrf_protection", "~> 1.0"
+
+gem 'rack-cors'
+
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.1.3", ">= 7.1.3.2"
 
