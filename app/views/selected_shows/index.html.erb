@@ -1,0 +1,27 @@
+<h2 class="text-center">My Favorite Shows</h2>
+
+<div class="cards-container mb-3">
+  <% @selected_shows.each do | selected_show | %>
+    <div class="card-show d-flex p-3 justify-content-between">
+      <%= link_to selected_show_path(selected_show) do %>
+        <div class="card-img w-50">
+          <%= image_tag selected_show.show.image_url %>
+        </div>
+        <div class="card-info w-50">
+          <div class="card-title d-flex justify-content-between">
+            <h3><strong><%= selected_show.show.title %></strong></h3>
+            <%= link_to selected_show_path(selected_show), data: { turbo_confirm: "Are you sure?", turbo_method: :delete } do %>
+              <i class="fa-solid fa-heart-crack"></i>
+            <% end %>
+          </div>
+          <div class="card-description d-flex flex-column">
+            <%= selected_show.show.description.truncate(80, separator: ' ', omission: '...') %>
+            <%= link_to selected_show_path(selected_show) do %>
+              <i class="fa-solid fa-headphones"></i>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -11,4 +11,7 @@ Rails.application.routes.draw do
   # root "posts#index"
 
   resources :shows, only:[:show, :index]
+
+  resources :selected_shows, only:[:index, :show, :create, :destroy]
+
 end

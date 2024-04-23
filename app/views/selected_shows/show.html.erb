@@ -1,0 +1,206 @@
+<div data-controller="modal" >
+  <div class="card-container d-flex flex-column">
+    <div id="access-token" data-token="<%= current_user.access_token %>"></div>
+    <div class="show-title text-center">
+      <h2><%= @selected_show.show.title %></h2>
+    </div>
+    <div class="show-img my-3 ">
+      <%= image_tag @selected_show.show.ticketmaster_url %>
+    </div>
+    <div class="show-description p-3">
+      <%= @selected_show.show.description %>
+    </div>
+    <div class="show-album p-3 mb-5">
+      <% @albums.each do |album| %>
+        <p><strong><%= album.name %></strong></p>
+        <div class="show-album-img text-center">
+          <%= image_tag album.images.first['url'], class: "avatar-large my-3" %>
+        </div>
+        <div class="show-album-tracks" data-controller="music-player" >
+          <% @songs.each do |track| %>
+            <div class="track">
+              <%= track.title %>
+              <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#songModal" data-modal-target="modal" data-action="click->modal#showModal" data-track-id="<%= track.id %>" data-track-title="<%= track.title %>">
+                <i class="fa-regular fa-heart heart-songs"></i>
+              </button>
+
+              <button class="play-button start-track" data-music-player-target="playButtons"  data-action="click->music-player#play" data-album-track-id="<%= track.track_id %>" data-track-name-id="<%= track.title %>"><i class="fa-solid fa-play" ></i></button>
+              <div class="artists-container d-flex">
+                <% track.artists.first(2).each_with_index do |artist, index| %>
+                  <p class="artist-name"><%= ",  " if index > 0 %> <%= artist %></p>
+                <% end %>
+              </div>
+              <div class="player-container d-flex justify-content-between align-items-center d-none"  data-music-player-target="player" >
+                <div class ="track-playing w-75 d-flex align-items-center p-3" data-music-player-target="divTrackPlaying">
+
+                </div>
+                <button class="play-btn" ><i class="fa-solid fa-play"></i></button>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+
+
+  <div class="modal" id="songModal" tabindex="-1" aria-labelledby="songModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <% if current_user.playlists.present? %>
+        <div class="new-playlist">
+          <div class="modal-header text-center">
+            <p class="modal-song-title w-75"><span id="modalSongTitle" data-modal-target="title"></span> </p>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <%= simple_form_for @playlist_song, id: "playlistSongForm" do |f| %>
+              <%= f.collection_select :playlist_id, current_user.playlists, :id, :name, { prompt: "Select your playlist" }, class: "form-control" %>
+              <%= f.hidden_field :song_id, id: "modalSongId", data: { modal_target: "songIdInput" } %>
+              <%= f.submit class:"btn-app mt-3", value: "Add to my playlist" %>
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+        <div class="modal-header text-center">
+          <p>You don't have any playlist yet, create one: </p>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <%= render "playlists/new" %>
+      <% end %>
+      <div class="modal-footer"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+<script>
+   if (sessionStorage.getItem('pageLoadedBefore')) {
+  // If so, reload the page
+  sessionStorage.removeItem('pageLoadedBefore');
+  window.location.reload();
+} else {
+  // If not, set the flag in sessionStorage
+  sessionStorage.setItem('pageLoadedBefore', true);
+}
+
+  document.addEventListener('DOMContentLoaded', function() {
+  let player; // Declare player globally
+  let playbackPosition; // Variable to store playback position
+
+  // Function to play track
+  function playTrack(trackId) {
+    const token = document.getElementById("access-token").dataset.token;
+    player = new Spotify.Player({
+      name: 'Web Playback SDK Quick Start Player',
+      getOAuthToken: cb => { cb(token); },
+      volume: 0.5,
+      robustnessLevel: 'MID'
+    });
+
+    // Play the track
+    player.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+      playTrackOnDevice(device_id, trackId);
+    });
+
+    player.connect();
+  }
+
+  // Function to play track on the device
+  function playTrackOnDevice(deviceId, trackId) {
+    const token = document.getElementById("access-token").dataset.token;
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        uris: [`spotify:track:${trackId}`],
+        position_ms: playbackPosition // Set playback position
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
+  }
+
+  // Function to pause track
+  function pauseTrack() {
+    player.getCurrentState().then(state => {
+      if (state) {
+        playbackPosition = state.position; // Store playback position
+        player.pause();
+      }
+    });
+  }
+
+  // Define a global variable to store the currently playing track ID
+let currentlyPlayingTrackId = null;
+
+
+// Event listener for play/pause button
+const playButton = document.querySelector('.play-btn');
+playButton.addEventListener('click', function() {
+  const trackId = document.querySelector(".track-title-player").dataset.albumTrackId;
+  const isPlaying = this.dataset.playing === 'true';
+
+  // Check if the current track is already playing
+  const isCurrentTrackPlaying = trackId === currentlyPlayingTrackId;
+
+  if (isPlaying) {
+    // Pause the track only if it's the currently playing track
+    if (isCurrentTrackPlaying) {
+      pauseTrack();
+    }
+    this.dataset.playing = 'false';
+    this.innerHTML = '<i class="fa-solid fa-play"></i>';
+  } else {
+    // Play the track from the beginning if it's a new track
+    if (!isCurrentTrackPlaying) {
+      playbackPosition = 0; // Start from the beginning
+    }
+    playTrack(trackId);
+    currentlyPlayingTrackId = trackId; // Update currentlyPlayingTrackId
+    this.dataset.playing = 'true';
+    this.innerHTML = '<i class="fa-solid fa-pause"></i>';
+  }
+});
+
+
+  // Spotify Web Playback SDK initialization
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    const token = document.getElementById("access-token").dataset.token;
+    player = new Spotify.Player({
+      name: 'Web Playback SDK Quick Start Player',
+      getOAuthToken: cb => { cb(token); },
+      volume: 0.5
+    });
+
+    // Ready
+    player.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+    });
+
+    // Not Ready
+    player.addListener('not_ready', ({ device_id }) => {
+      console.log('Device ID has gone offline', device_id);
+    });
+
+    player.addListener('initialization_error', ({ message }) => {
+      console.error(message);
+    });
+
+    player.addListener('authentication_error', ({ message }) => {
+      console.error(message);
+    });
+
+    player.addListener('account_error', ({ message }) => {
+      console.error(message);
+    });
+
+    player.connect();
+  };
+});
+</script>
