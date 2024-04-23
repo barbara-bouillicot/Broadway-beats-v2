@@ -14,4 +14,7 @@ Rails.application.routes.draw do
 
   resources :selected_shows, only:[:index, :show, :create, :destroy]
 
+  resources :songs, only:[:show, :index, :create]
+
+
 end
